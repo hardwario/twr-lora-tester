@@ -250,7 +250,8 @@ void menu_main_callback(Menu *menu, MenuItem *item)
 
     else if (item == &m_item_sleep)
     {
-        sleep();
+        //sleep();
+        twr_cmwx1zzabz_rfq(&lora);
     }
 }
 
@@ -419,12 +420,12 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_JOIN_SUCCESS)
     {
-        twr_atci_printf("$JOIN_OK");
+        twr_atci_printfln("$JOIN_OK");
         strcpy(m_lora_join_str, "JOINED");
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_JOIN_ERROR)
     {
-        twr_atci_printf("$JOIN_ERROR");
+        twr_atci_printfln("$JOIN_ERROR");
         strcpy(m_lora_join_str, "ERROR");
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_RECEIVED)
@@ -439,6 +440,24 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
             snprintf(hex, sizeof(hex), "%02X", buffer[i]);
             strncat(m_lora_received_str, hex, sizeof(m_lora_received_str) - 1);
         }
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_RFQ)
+    {
+        int32_t rssi;
+        int32_t snr;
+        twr_cmwx1zzabz_get_rfq(&lora, &rssi, &snr);
+
+        twr_atci_printfln("RSSI %d, SNR: %d", rssi, snr);
+
+        twr_cmwx1zzabz_frame_counter(&lora);
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_FRAME_COUNTER)
+    {
+        uint32_t uplink;
+        uint32_t downlink;
+        twr_cmwx1zzabz_get_frame_counter(&lora, &uplink, &downlink);
+
+        twr_atci_printfln("up %d, down: %d", uplink, downlink);
     }
 }
 
