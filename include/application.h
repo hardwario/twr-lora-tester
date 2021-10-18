@@ -5,7 +5,9 @@
 #define VERSION "vdev"
 #endif
 
-#include <twr.h>
 #include <bcl.h>
 
-#endif
+void lcdBufferString(char *str, int x, int y);
+void lcdBufferNumber(int number, int x, int y);
+
+#endif // _APPLICATION_H
