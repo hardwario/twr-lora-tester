@@ -251,7 +251,8 @@ void menu_main_callback(Menu *menu, MenuItem *item)
     else if (item == &m_item_sleep)
     {
         //sleep();
-        twr_cmwx1zzabz_rfq(&lora);
+        //twr_cmwx1zzabz_rfq(&lora);
+        twr_cmwx1zzabz_link_check(&lora);
     }
 }
 
@@ -458,6 +459,16 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
         twr_cmwx1zzabz_get_frame_counter(&lora, &uplink, &downlink);
 
         twr_atci_printfln("up %d, down: %d", uplink, downlink);
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_LINK_CHECK)
+    {
+        uint8_t mac_response;
+        uint8_t margin;
+        uint8_t gateway_count;
+
+        twr_cmwx1zzabz_get_link_check(&lora, &mac_response, &margin, &gateway_count);
+
+        twr_atci_printfln("mac %d, margin: %d, gateway_count %d", mac_response, margin, gateway_count);
     }
 }
 
