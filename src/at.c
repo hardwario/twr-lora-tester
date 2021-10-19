@@ -192,6 +192,27 @@ bool at_join(void)
     return true;
 }
 
+bool at_frmcnt(void)
+{
+    twr_cmwx1zzabz_frame_counter(_at.lora);
+
+    return true;
+}
+
+bool at_link_check(void)
+{
+    twr_cmwx1zzabz_link_check(_at.lora);
+
+    return true;
+}
+
+bool at_rfq(void)
+{
+    twr_cmwx1zzabz_rfq(_at.lora);
+
+    return true;
+}
+
 bool at_nwk_read(void)
 {
     uint8_t nwk_public = twr_cmwx1zzabz_get_nwk_public(_at.lora);
@@ -218,6 +239,15 @@ bool at_nwk_set(twr_atci_param_t *param)
 bool at_blink(void)
 {
     twr_led_blink(_at.led, 3);
+
+    return true;
+}
+
+bool at_debug_set(twr_atci_param_t *param)
+{
+    uint8_t debug = atoi(param->txt);
+
+    twr_cmwx1zzabz_set_debug(_at.lora, (debug == 1) ? true : false);
 
     return true;
 }

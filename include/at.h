@@ -12,7 +12,11 @@
                          {"$BAND", NULL, at_band_set, at_band_read, NULL, "0:AS923, 1:AU915, 5:EU868, 6:KR920, 7:IN865, 8:US915"},\
                          {"$MODE", NULL, at_mode_set, at_mode_read, NULL, "0:ABP, 1:OTAA"},\
                          {"$NWK", NULL, at_nwk_set, at_nwk_read, NULL, "Network type 0:private, 1:public"},\
-                         {"$JOIN", at_join, NULL, NULL, NULL, "Send OTAA Join packet"}
+                         {"$JOIN", at_join, NULL, NULL, NULL, "Send OTAA Join packet"},\
+                         {"$FRMCNT", at_frmcnt, NULL, NULL, NULL, "Send OTAA Join packet"},\
+                         {"$LNCHECK", at_link_check, NULL, NULL, NULL, "Send OTAA Join packet"},\
+                         {"$RFQ", at_rfq, NULL, NULL, NULL, "Send OTAA Join packet"},\
+                         {"$DEBUG", NULL, at_debug_set, NULL, NULL, "Show debug UART communication"}
 
 #define AT_LED_COMMANDS {"$BLINK", at_blink, NULL, NULL, NULL, "LED blink 3 times"},\
                         {"$LED", NULL, at_led_set, NULL, at_led_help, "LED on/off"}
@@ -46,8 +50,13 @@ bool at_mode_set(twr_atci_param_t *param);
 bool at_nwk_read(void);
 bool at_nwk_set(twr_atci_param_t *param);
 
+bool at_frmcnt(void);
+bool at_link_check(void);
+bool at_rfq(void);
+
 bool at_join(void);
 bool at_blink(void);
+bool at_debug_set(twr_atci_param_t *param);
 bool at_led_set(twr_atci_param_t *param);
 bool at_led_help(void);
 
