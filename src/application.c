@@ -251,8 +251,8 @@ void menu_main_callback(Menu *menu, MenuItem *item)
     else if (item == &m_item_sleep)
     {
         //sleep();
-        //twr_cmwx1zzabz_rfq(&lora);
-        twr_cmwx1zzabz_link_check(&lora);
+        twr_cmwx1zzabz_rfq(&lora);
+        //twr_cmwx1zzabz_link_check(&lora);
     }
 }
 
@@ -460,15 +460,19 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
 
         twr_atci_printfln("up %d, down: %d", uplink, downlink);
     }
-    else if (event == TWR_CMWX1ZZABZ_EVENT_LINK_CHECK)
+    else if (event == TWR_CMWX1ZZABZ_EVENT_LINK_CHECK_OK)
     {
         uint8_t mac_response;
         uint8_t margin;
         uint8_t gateway_count;
 
-        twr_cmwx1zzabz_get_link_check(&lora, &mac_response, &margin, &gateway_count);
+        twr_cmwx1zzabz_get_link_check(&lora, &margin, &gateway_count);
 
-        twr_atci_printfln("mac %d, margin: %d, gateway_count %d", mac_response, margin, gateway_count);
+        twr_atci_printfln("margin: %d, gateway_count %d", margin, gateway_count);
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_LINK_CHECK_NOK)
+    {
+        twr_atci_printfln("link check nok");
     }
 }
 
@@ -658,6 +662,7 @@ void application_init(void)
     twr_cmwx1zzabz_init(&lora, TWR_UART_UART1);
     twr_cmwx1zzabz_set_event_handler(&lora, lora_callback, NULL);
     twr_cmwx1zzabz_set_class(&lora, TWR_CMWX1ZZABZ_CONFIG_CLASS_A);
+    twr_cmwx1zzabz_set_debug(&lora, true);
 
     // Initialize AT command interface
     at_init(&led, &lora);
