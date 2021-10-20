@@ -3,7 +3,8 @@
 #include "m2.h"
 #include "at.h"
 
-#define GPS_TIMEOUT_MS (10 * 60 * 1000)
+#define GPS_TIMEOUT_MS (15 * 60 * 1000)
+#define TEMPERATURE_MEASUREMENT_PERIOD_MS (1 * 60 * 1000)
 
 // LED instance
 twr_led_t led;
@@ -43,6 +44,8 @@ bool gps_present = false;
 bool gps_sleep = false;
 twr_tick_t gps_tick = 0;
 
+bool reset_flag = false;
+
 int32_t rfq_rssi;
 int32_t rfq_snr;
 uint32_t frame_counter_up;
@@ -55,6 +58,14 @@ int lora_packet_counter = 0;
 
 twr_tick_t task_tx_period_delay = 0;
 twr_scheduler_task_id_t task_tx_period_id;
+
+void clear_packet_info(void)
+{
+    rfq_rssi = 0;
+    rfq_snr = 0;
+    frame_counter_down = 0;
+    frame_counter_up = 0;
+}
 
 void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
 {
@@ -96,7 +107,10 @@ void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
         break;
 
         case TWR_MODULE_LCD_EVENT_BOTH_HOLD:
-            twr_system_reset();
+            // Reset must be handled later when the both buttons are release, because after reboot when any button is pressed
+            // the BOOT pin is also HIGH, which causes start of bootloader instead of the application
+            reset_flag = true;
+            strcpy(str_status, "RESET");
         break;
 
         default:
@@ -137,6 +151,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_led_set_mode(&led, TWR_LED_MODE_BLINK_FAST);
         strcpy(str_status, "ERR");
+        clear_packet_info();
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_SEND_MESSAGE_START)
     {
@@ -188,6 +203,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_atci_printfln("$JOIN_ERROR");
         strcpy(str_status, "JOIN: ERR");
+        clear_packet_info();
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_RECEIVED)
     {
@@ -238,6 +254,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_atci_printfln("$LINK_CHECK: 0");
         strcpy(str_status, "LNK: NOK");
+        clear_packet_info();
     }
 }
 
@@ -384,7 +401,7 @@ void application_init(void)
     // Initialize thermometer
     twr_tmp112_init(&tmp112, TWR_I2C_I2C0, 0x49);
     twr_tmp112_set_event_handler(&tmp112, tmp112_event_handler, NULL);
-    twr_tmp112_set_update_interval(&tmp112, 10000);
+    twr_tmp112_set_update_interval(&tmp112, TEMPERATURE_MEASUREMENT_PERIOD_MS);
 
     twr_led_init_virtual(&gps_led_r, TWR_MODULE_GPS_LED_RED, twr_module_gps_get_led_driver(), 0);
     twr_led_init_virtual(&gps_led_g, TWR_MODULE_GPS_LED_GREEN, twr_module_gps_get_led_driver(), 0);
@@ -402,7 +419,7 @@ void application_init(void)
     twr_cmwx1zzabz_init(&lora, TWR_UART_UART1);
     twr_cmwx1zzabz_set_event_handler(&lora, lora_callback, NULL);
     twr_cmwx1zzabz_set_class(&lora, TWR_CMWX1ZZABZ_CONFIG_CLASS_A);
-    twr_cmwx1zzabz_set_debug(&lora, false);
+    twr_cmwx1zzabz_set_debug(&lora, true);
 
     if (!twr_module_gps_init())
     {
@@ -446,6 +463,10 @@ void application_task(void)
         snprintf(gps_buffer, sizeof(gps_buffer),"Fix: %d Sats: %d", gps_quality.fix_quality, gps_quality.satellites_tracked);
         twr_module_lcd_draw_string(0, 26, gps_buffer, 1);
     }
+    else
+    {
+        twr_module_lcd_draw_string(0, 0, "No GPS Module", 1);
+    }
 
     char str_battery[8];
     snprintf(str_battery, sizeof(str_battery),"%.1fV", battery_voltage);
@@ -467,7 +488,7 @@ void application_task(void)
     twr_module_lcd_draw_string(0, 100, "LNK CHK", 1);
     twr_module_lcd_draw_string(5, 113, "(JOIN)", 1);
     twr_module_lcd_draw_string(88, 100, "SEND", 1);
-    twr_module_lcd_draw_string(85, 113, "(AUTO)", 1);
+    //twr_module_lcd_draw_string(85, 113, "(AUTO)", 1);
 
     twr_module_lcd_update();
 
@@ -475,9 +496,8 @@ void application_task(void)
 
     if (gps_present)
     {
-        twr_tick_t t = twr_tick_get();
         // If timeout
-        if (!gps_sleep && (t > (gps_tick + GPS_TIMEOUT_MS)))
+        if (!gps_sleep && (twr_tick_get() > (gps_tick + GPS_TIMEOUT_MS)))
         {
             twr_module_gps_stop();
             gps_sleep = true;
@@ -485,5 +505,24 @@ void application_task(void)
         }
     }
 
-    twr_scheduler_plan_current_relative(1000);
+    if (reset_flag)
+    {
+        twr_scheduler_plan_current_relative(100);
+        if (twr_gpio_get_input(TWR_GPIO_BUTTON) == 0)
+        {
+            twr_system_reset();
+        }
+        return;
+    }
+
+    // Faster display redraw when GPS present & active
+    if (gps_present && !gps_sleep)
+    {
+        twr_scheduler_plan_current_relative(1000);
+        return;
+    }
+
+    // Otherwise update is dependent on button events which
+    // triggerst this task automatically
+    //twr_scheduler_plan_current_relative(10000);
 }
