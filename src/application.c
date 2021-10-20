@@ -1,6 +1,5 @@
 #include <application.h>
 
-#include "m2.h"
 #include "at.h"
 
 #define GPS_TIMEOUT_MS (15 * 60 * 1000)
