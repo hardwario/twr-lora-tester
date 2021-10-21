@@ -19,7 +19,7 @@ jobs:
           update-wheel: "false"
       - name: Build PlatformIO project
         env:
-          PLATFORMIO_BUILD_FLAGS: "-D'VERSION=\"{{ env.GITHUB_TAG }}\"'"
+          PLATFORMIO_BUILD_FLAGS: "-D'VERSION=\"${{ env.GITHUB_TAG }}\"'"
         run: |
           echo $PLATFORMIO_BUILD_FLAGS
           pio run -e release
