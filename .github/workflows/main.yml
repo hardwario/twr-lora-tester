@@ -18,6 +18,8 @@ jobs:
           update-setuptools: "false"
           update-wheel: "false"
       - name: Build PlatformIO project
+        env:
+          PLATFORMIO_BUILD_FLAGS: -DCI_TAG="{{ env.GITHUB_TAG }}"
         run: pio run -e release
       - name: Set helper variables
         if: ${{ github.event_name == 'release' }}

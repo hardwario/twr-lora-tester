@@ -5,6 +5,10 @@
 #define GPS_TIMEOUT_MS (15 * 60 * 1000)
 #define TEMPERATURE_MEASUREMENT_PERIOD_MS (1 * 60 * 1000)
 
+#ifndef CI_TAG
+#define CI_TAG "v0.0.0"
+#endif
+
 // LED instance
 twr_led_t led;
 
@@ -446,6 +450,8 @@ void application_init(void)
         gps_present = true;
         twr_atci_printfln("$GPS: \"START\"");
     }
+
+    twr_atci_printf("$FW: \"%s\"", CI_TAG);
 
 }
 
