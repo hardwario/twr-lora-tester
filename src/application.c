@@ -150,12 +150,15 @@ void lora_ready_params_udpate()
 
 void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *event_param)
 {
+    static bool ready_flag = false;
+
     twr_scheduler_plan_now(0);
 
     if (event == TWR_CMWX1ZZABZ_EVENT_ERROR)
     {
         twr_led_set_mode(&led, TWR_LED_MODE_BLINK_FAST);
         strcpy(str_status, "ERR");
+        ready_flag = false;
 
         strncpy(str_info, twr_cmwx1zzabz_get_fw_version(&lora), sizeof(str_info));
     }
@@ -186,8 +189,6 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     else if (event == TWR_CMWX1ZZABZ_EVENT_READY)
     {
         twr_led_set_mode(&led, TWR_LED_MODE_OFF);
-
-       static bool ready_flag = false;
 
         if (!ready_flag)
         {
