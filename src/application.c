@@ -38,6 +38,7 @@ bool at_send(void);
 bool at_status(void);
 
 char str_status[16] = "INIT...";
+char str_info[32] = "";
 float battery_voltage;
 bool gps_present = false;
 bool gps_sleep = false;
@@ -57,6 +58,11 @@ int lora_packet_counter = 0;
 
 twr_tick_t task_tx_period_delay = 0;
 twr_scheduler_task_id_t task_tx_period_id;
+
+void set_packet_info(void)
+{
+    snprintf(str_info, sizeof(str_info),"RSSI%d,SNR%d,C%d,%d", (int)rfq_rssi, (int)rfq_snr, (int)frame_counter_up, (int)frame_counter_down);
+}
 
 void clear_packet_info(void)
 {
@@ -150,7 +156,8 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_led_set_mode(&led, TWR_LED_MODE_BLINK_FAST);
         strcpy(str_status, "ERR");
-        clear_packet_info();
+
+        strncpy(str_info, twr_cmwx1zzabz_get_fw_version(&lora), sizeof(str_info));
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_SEND_MESSAGE_START)
     {
@@ -187,6 +194,8 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
             strcpy(str_status, "READY");
             ready_flag = true;
         }
+
+        strncpy(str_info, twr_cmwx1zzabz_get_fw_version(&lora), sizeof(str_info));
 
         lora_ready_params_udpate();
     }
@@ -225,12 +234,16 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
         twr_atci_printfln("$RSSI %d", rfq_rssi);
         twr_atci_printfln("$SNR: %d", rfq_snr);
 
+        set_packet_info();
+
         twr_cmwx1zzabz_frame_counter(&lora);
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_FRAME_COUNTER)
     {
         twr_cmwx1zzabz_get_frame_counter(&lora, &frame_counter_up, &frame_counter_down);
         twr_atci_printfln("$FRAME_COUNTER: %d,%d", frame_counter_up, frame_counter_down);
+
+        set_packet_info();
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_LINK_CHECK_OK)
     {
@@ -478,8 +491,6 @@ void application_task(void)
 
     twr_module_lcd_set_font(&twr_font_ubuntu_13);
 
-    char str_info[32];
-    snprintf(str_info, sizeof(str_info),"RSSI%d,SNR%d,C%d,%d", (int)rfq_rssi, (int)rfq_snr, (int)frame_counter_up, (int)frame_counter_down);
     twr_module_lcd_draw_string(0, 82, str_info, 1);
 
     // Buttons
