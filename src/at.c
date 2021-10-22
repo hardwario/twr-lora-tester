@@ -236,6 +236,98 @@ bool at_nwk_set(twr_atci_param_t *param)
     return true;
 }
 
+bool at_adr_read(void)
+{
+    uint8_t adr = twr_cmwx1zzabz_get_adaptive_datarate(_at.lora);
+
+    twr_atci_printfln("$ADR: %d", adr);
+
+    return true;
+}
+
+bool at_adr_set(twr_atci_param_t *param)
+{
+    uint8_t adr = atoi(param->txt);
+
+    if (adr > 1)
+    {
+        return false;
+    }
+
+    twr_cmwx1zzabz_set_adaptive_datarate(_at.lora, adr);
+
+    return true;
+}
+
+bool at_dr_read(void)
+{
+    uint8_t dr = twr_cmwx1zzabz_get_datarate(_at.lora);
+
+    twr_atci_printfln("$DR: %d", dr);
+
+    return true;
+}
+
+bool at_dr_set(twr_atci_param_t *param)
+{
+    uint8_t dr = atoi(param->txt);
+
+    if (dr > 15)
+    {
+        return false;
+    }
+
+    twr_cmwx1zzabz_set_datarate(_at.lora, dr);
+
+    return true;
+}
+
+bool at_repu_read(void)
+{
+    uint8_t repeat = twr_cmwx1zzabz_get_repeat_unconfirmed(_at.lora);
+
+    twr_atci_printfln("$REPU: %d", repeat);
+
+    return true;
+}
+
+bool at_repu_set(twr_atci_param_t *param)
+{
+    uint8_t repeat = atoi(param->txt);
+
+    if (repeat < 1 || repeat > 15)
+    {
+        return false;
+    }
+
+    twr_cmwx1zzabz_set_repeat_unconfirmed(_at.lora, repeat);
+
+    return true;
+}
+
+bool at_repc_read(void)
+{
+    uint8_t repeat = twr_cmwx1zzabz_get_repeat_confirmed(_at.lora);
+
+    twr_atci_printfln("$REPC: %d", repeat);
+
+    return true;
+}
+
+bool at_repc_set(twr_atci_param_t *param)
+{
+    uint8_t repeat = atoi(param->txt);
+
+    if (repeat < 1 || repeat > 8)
+    {
+        return false;
+    }
+
+    twr_cmwx1zzabz_set_repeat_confirmed(_at.lora, repeat);
+
+    return true;
+}
+
 bool at_blink(void)
 {
     twr_led_blink(_at.led, 3);

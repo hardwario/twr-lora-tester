@@ -12,6 +12,10 @@
                          {"$BAND", NULL, at_band_set, at_band_read, NULL, "0:AS923, 1:AU915, 5:EU868, 6:KR920, 7:IN865, 8:US915"},\
                          {"$MODE", NULL, at_mode_set, at_mode_read, NULL, "0:ABP, 1:OTAA"},\
                          {"$NWK", NULL, at_nwk_set, at_nwk_read, NULL, "Network type 0:private, 1:public"},\
+                         {"$ADR", NULL, at_adr_set, at_adr_read, NULL, "Automatic data rate 0:disabled, 1:enabled"},\
+                         {"$DR", NULL, at_dr_set, at_dr_read, NULL, "Data rate 0-15"},\
+                         {"$REPU", NULL, at_repu_set, at_repu_read, NULL, "Repeat of unconfirmed transmissions 1-15"},\
+                         {"$REPC", NULL, at_repc_set, at_repc_read, NULL, "Repeat of confirmed transmissions 1-8"},\
                          {"$JOIN", at_join, NULL, NULL, NULL, "Send OTAA Join packet"},\
                          {"$FRMCNT", at_frmcnt, NULL, NULL, NULL, "Send OTAA Join packet"},\
                          {"$LNCHECK", at_link_check, NULL, NULL, NULL, "Send OTAA Join packet"},\
@@ -49,6 +53,18 @@ bool at_mode_set(twr_atci_param_t *param);
 
 bool at_nwk_read(void);
 bool at_nwk_set(twr_atci_param_t *param);
+
+bool at_adr_read(void);
+bool at_adr_set(twr_atci_param_t *param);
+
+bool at_dr_read(void);
+bool at_dr_set(twr_atci_param_t *param);
+
+bool at_repu_read(void);
+bool at_repu_set(twr_atci_param_t *param);
+
+bool at_repc_read(void);
+bool at_repc_set(twr_atci_param_t *param);
 
 bool at_frmcnt(void);
 bool at_link_check(void);
