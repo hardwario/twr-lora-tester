@@ -29,6 +29,10 @@ twr_module_gps_quality_t gps_quality;
 twr_led_t gps_led_r;
 twr_led_t gps_led_g;
 
+twr_led_t lcd_led_r;
+twr_led_t lcd_led_g;
+twr_led_t lcd_led_b;
+
 float temperature;
 
 bool lora_send_confimed_message = false;
@@ -50,6 +54,7 @@ int32_t rfq_rssi;
 int32_t rfq_snr;
 uint32_t frame_counter_up;
 uint32_t frame_counter_down;
+uint8_t retransmission_counter;
 
 int lora_received = 0;
 int lora_tx_packet_length = 1;
@@ -61,15 +66,20 @@ twr_scheduler_task_id_t task_tx_period_id;
 
 void set_packet_info(void)
 {
-    snprintf(str_info, sizeof(str_info),"RSSI%d,SNR%d,C%d,%d", (int)rfq_rssi, (int)rfq_snr, (int)frame_counter_up, (int)frame_counter_down);
+    snprintf(str_info, sizeof(str_info),"RSSI%d,SNR%d,C%d/%d", (int)rfq_rssi, (int)rfq_snr, (int)frame_counter_up, (int)frame_counter_down);
 }
 
-void clear_packet_info(void)
+void packet_info_clear(void)
 {
     rfq_rssi = 0;
     rfq_snr = 0;
     frame_counter_down = 0;
     frame_counter_up = 0;
+}
+
+void packet_info_lora_fw(void)
+{
+    snprintf(str_info, sizeof(str_info), "LoRa Mod. FW %s", twr_cmwx1zzabz_get_fw_version(&lora));
 }
 
 void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
@@ -156,35 +166,41 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
 
     if (event == TWR_CMWX1ZZABZ_EVENT_ERROR)
     {
-        twr_led_set_mode(&led, TWR_LED_MODE_BLINK_FAST);
+        twr_led_set_mode(&led, TWR_LED_MODE_BLINK_SLOW);
+        twr_led_set_mode(&lcd_led_r, TWR_LED_MODE_BLINK_SLOW);
         strcpy(str_status, "ERR");
         ready_flag = false;
 
-        strncpy(str_info, twr_cmwx1zzabz_get_fw_version(&lora), sizeof(str_info));
+        packet_info_lora_fw();
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_SEND_MESSAGE_START)
     {
-        twr_led_set_mode(&led, TWR_LED_MODE_ON);
-        strcpy(str_status, "SENDING...");
+        twr_led_pulse(&led, 500);
+        retransmission_counter = 1;
+        snprintf(str_status, sizeof(str_status), "SEND %d/%d..", (int)retransmission_counter, (int)twr_cmwx1zzabz_get_repeat_confirmed(self));
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_SEND_MESSAGE_DONE)
     {
-        twr_led_set_mode(&led, TWR_LED_MODE_OFF);
-        strcpy(str_status, "SENT...");
+        //strcpy(str_status, "SENT...");
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_CONFIRMED)
     {
-        strcpy(str_status, "ACK");
-
+        strcpy(str_status, "SEND: ACK");
+        twr_led_pulse(&lcd_led_g, 2000);
         // RFQ + Frame counters chain
         twr_cmwx1zzabz_rfq(&lora);
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_NOT_CONFIRMED)
     {
-        strcpy(str_status, "NACK");
-
-        // RFQ + Frame counters chain
-        twr_cmwx1zzabz_rfq(&lora);
+        strcpy(str_status, "SEND:NACK");
+        twr_led_pulse(&lcd_led_r, 2000);
+        packet_info_clear();
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_RETRANSMISSION)
+    {
+        twr_led_pulse(&lcd_led_g, 500);
+        retransmission_counter++;
+        snprintf(str_status, sizeof(str_status), "SEND %d/%d..", (int)retransmission_counter, (int)twr_cmwx1zzabz_get_repeat_confirmed(self));
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_READY)
     {
@@ -193,10 +209,10 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
         if (!ready_flag)
         {
             strcpy(str_status, "READY");
+            packet_info_lora_fw();
+            twr_led_pulse(&lcd_led_g, 500);
             ready_flag = true;
         }
-
-        strncpy(str_info, twr_cmwx1zzabz_get_fw_version(&lora), sizeof(str_info));
 
         lora_ready_params_udpate();
     }
@@ -204,7 +220,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_atci_printfln("$JOIN_OK");
         strcpy(str_status, "JOIN: OK");
-
+        twr_led_pulse(&lcd_led_g, 2000);
         // RFQ + Frame counters chain
         twr_cmwx1zzabz_rfq(&lora);
     }
@@ -212,7 +228,8 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_atci_printfln("$JOIN_ERROR");
         strcpy(str_status, "JOIN: ERR");
-        clear_packet_info();
+        twr_led_pulse(&lcd_led_r, 2000);
+        packet_info_clear();
     }
     else if (event == TWR_CMWX1ZZABZ_EVENT_MESSAGE_RECEIVED)
     {
@@ -258,7 +275,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
         twr_atci_printfln("$GWCOUNT: %d", gateway_count);
 
         snprintf(str_status, sizeof(str_status), "CHK:%d,%d", (int)margin, (int)gateway_count);
-
+        twr_led_pulse(&lcd_led_g, 2000);
         // RFQ + Frame counters chain
         twr_cmwx1zzabz_rfq(&lora);
 
@@ -267,7 +284,8 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     {
         twr_atci_printfln("$LINK_CHECK: 0");
         strcpy(str_status, "LNK: NOK");
-        clear_packet_info();
+        twr_led_pulse(&lcd_led_r, 2000);
+        packet_info_clear();
     }
 }
 
@@ -280,6 +298,10 @@ bool at_send(void)
     int16_t temp = (int16_t)(temperature * 10.0f);
     buffer[len++] = temp;
     buffer[len++] = temp >> 8;
+
+    int16_t voltage = (int16_t)(battery_voltage * 10.0f);
+    buffer[len++] = voltage;
+    buffer[len++] = voltage >> 8;
 
     int lat = gps_position.latitude * 1E5;
     buffer[len++] = lat;
@@ -350,8 +372,6 @@ void gps_module_event_handler(twr_module_gps_event_t event, void *event_param)
         {
         }
 
-        //snprintf(m_lora_gps_info_str, sizeof(m_lora_gps_info_str), "%03.1f,%03.1f", gps_position.latitude, gps_position.longitude);
-
         twr_module_gps_invalidate();
     }
 }
@@ -368,20 +388,6 @@ void battery_event_handler(twr_module_battery_event_t event, void *event_param)
             twr_scheduler_plan_now(0);
             twr_atci_printfln("$BATT: %02.1f", battery_voltage);
         }
-    }
-}
-
-void task_tx_periodic(void *param)
-{
-    (void) param;
-
-    twr_led_pulse(&led, 500);
-
-    at_send();
-
-    if (task_tx_period_delay)
-    {
-        twr_scheduler_plan_current_relative(task_tx_period_delay);
     }
 }
 
@@ -404,7 +410,7 @@ void application_init(void)
 
     // Initialize LED
     twr_led_init(&led, TWR_GPIO_LED, false, false);
-    twr_led_set_mode(&led, TWR_LED_MODE_ON);
+    twr_led_pulse(&led, 500);
 
     // Initialize battery
     twr_module_battery_init();
@@ -427,6 +433,11 @@ void application_init(void)
     twr_module_lcd_set_event_handler(lcd_event_handler, NULL);
     twr_module_lcd_set_button_hold_time(300);
     twr_module_lcd_set_button_debounce_time(30);
+
+    const twr_led_driver_t *led_driver = twr_module_lcd_get_led_driver();
+    twr_led_init_virtual(&lcd_led_r, TWR_MODULE_LCD_LED_RED, led_driver, 1);
+    twr_led_init_virtual(&lcd_led_g, TWR_MODULE_LCD_LED_GREEN, led_driver, 1);
+    twr_led_init_virtual(&lcd_led_b, TWR_MODULE_LCD_LED_BLUE, led_driver, 1);
 
     // Initialize lora module
     twr_cmwx1zzabz_init(&lora, TWR_UART_UART1);
@@ -462,6 +473,7 @@ void application_task(void)
 
     twr_system_pll_enable();
 
+    uint32_t x;
     char gps_buffer[30];
     twr_module_lcd_clear();
 
@@ -487,21 +499,25 @@ void application_task(void)
     snprintf(str_battery, sizeof(str_battery),"%.1fV", battery_voltage);
     twr_module_lcd_draw_string(100, 26, str_battery, 1);
 
-    twr_module_lcd_set_font(&twr_font_ubuntu_24);
-    uint32_t x = (128 / 2) - twr_gfx_calc_string_width(twr_module_lcd_get_gfx(), str_status) / 2;
+    twr_module_lcd_draw_line(0, 40, 127, 40, true);
 
-    twr_module_lcd_draw_string(x, 45, str_status, 1);
+    twr_module_lcd_set_font(&twr_font_ubuntu_24);
+    x = (128 / 2) - twr_gfx_calc_string_width(twr_module_lcd_get_gfx(), str_status) / 2;
+    twr_module_lcd_draw_string(x, 50, str_status, 1);
 
     twr_module_lcd_set_font(&twr_font_ubuntu_13);
 
-    twr_module_lcd_draw_string(0, 82, str_info, 1);
+    x = (128 / 2) - twr_gfx_calc_string_width(twr_module_lcd_get_gfx(), str_info) / 2;
+    twr_module_lcd_draw_string(x, 78, str_info, 1);
 
     // Buttons
     //twr_module_lcd_draw_string(50, 90, "((RESET))", 1);
-    twr_module_lcd_draw_string(0, 100, "LNK CHK", 1);
+    twr_module_lcd_draw_string(5, 100, "CHECK", 1);
     twr_module_lcd_draw_string(5, 113, "(JOIN)", 1);
-    twr_module_lcd_draw_string(88, 100, "SEND", 1);
+    twr_module_lcd_draw_string(90, 100, "SEND", 1);
     //twr_module_lcd_draw_string(85, 113, "(AUTO)", 1);
+
+    twr_module_lcd_draw_line(0, 96, 127, 96, true);
 
     twr_module_lcd_update();
 
