@@ -3,8 +3,8 @@
 # LoRa / LoRaWAN Tester using HARDWARIO TOWER Core Module
 
 [![build](https://github.com/hardwario/twr-lora-tester/actions/workflows/main.yml/badge.svg)](https://github.com/hardwario/twr-lora-tester/actions/workflows/main.yml)
-[![Release](https://img.shields.io/github/release/hardwario/twr-skeleton.svg)](https://github.com/hardwario/twr-skeleton/releases)
-[![License](https://img.shields.io/github/license/hardwario/twr-skeleton.svg)](https://github.com/hardwario/twr-skeleton/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/release/hardwario/twr-lora-tester.svg)](https://github.com/hardwario/twr-lora-tester/releases)
+[![License](https://img.shields.io/github/license/hardwario/twr-lora-tester.svg)](https://github.com/hardwario/twr-lora-tester/blob/master/LICENSE)
 [![Twitter](https://img.shields.io/twitter/follow/hardwario_en.svg?style=social&label=Follow)](https://twitter.com/hardwario_en)
 
 This repository contains firmware for LoRa Tester.
