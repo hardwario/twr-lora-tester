@@ -17,10 +17,12 @@
                          {"$REPU", NULL, at_repu_set, at_repu_read, NULL, "Repeat of unconfirmed transmissions 1-15"},\
                          {"$REPC", NULL, at_repc_set, at_repc_read, NULL, "Repeat of confirmed transmissions 1-8"},\
                          {"$JOIN", at_join, NULL, NULL, NULL, "Send OTAA Join packet"},\
-                         {"$FRMCNT", at_frmcnt, NULL, NULL, NULL, "Send OTAA Join packet"},\
-                         {"$LNCHECK", at_link_check, NULL, NULL, NULL, "Send OTAA Join packet"},\
-                         {"$RFQ", at_rfq, NULL, NULL, NULL, "Send OTAA Join packet"},\
-                         {"$DEBUG", NULL, at_debug_set, NULL, NULL, "Show debug UART communication"}
+                         {"$FRMCNT", at_frmcnt, NULL, NULL, NULL, "Get frame counters"},\
+                         {"$LNCHECK", at_link_check, NULL, NULL, NULL, "MAC Link Check"},\
+                         {"$RFQ", at_rfq, NULL, NULL, NULL, "Get RSSI/SNR of last RX packet"},\
+                         {"$DEBUG", NULL, at_debug_set, NULL, NULL, "Show debug UART communication"},\
+                         {"$REBOOT", at_reboot, NULL, NULL, NULL, "Firmware reboot"},\
+                         {"$FRESET", at_freset, NULL, NULL, NULL, "LoRa Module factory reset"}
 
 #define AT_LED_COMMANDS {"$BLINK", at_blink, NULL, NULL, NULL, "LED blink 3 times"},\
                         {"$LED", NULL, at_led_set, NULL, at_led_help, "LED on/off"}
@@ -66,6 +68,8 @@ bool at_repu_set(twr_atci_param_t *param);
 bool at_repc_read(void);
 bool at_repc_set(twr_atci_param_t *param);
 
+bool at_reboot(void);
+bool at_freset(void);
 bool at_frmcnt(void);
 bool at_link_check(void);
 bool at_rfq(void);

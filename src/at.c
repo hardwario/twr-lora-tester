@@ -199,6 +199,20 @@ bool at_frmcnt(void)
     return true;
 }
 
+bool at_reboot(void)
+{
+    twr_system_reset();
+
+    return true;
+}
+
+bool at_freset(void)
+{
+    twr_cmwx1zzabz_factory_reset(_at.lora);
+
+    return true;
+}
+
 bool at_link_check(void)
 {
     twr_cmwx1zzabz_link_check(_at.lora);

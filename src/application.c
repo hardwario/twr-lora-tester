@@ -166,6 +166,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
 
     if (event == TWR_CMWX1ZZABZ_EVENT_ERROR)
     {
+        twr_log_debug("$LORA_ERROR");
         twr_led_set_mode(&led, TWR_LED_MODE_BLINK_SLOW);
         twr_led_set_mode(&lcd_led_r, TWR_LED_MODE_BLINK_SLOW);
         strcpy(str_status, "ERR");
@@ -205,6 +206,7 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
     else if (event == TWR_CMWX1ZZABZ_EVENT_READY)
     {
         twr_led_set_mode(&led, TWR_LED_MODE_OFF);
+        twr_led_set_mode(&lcd_led_r, TWR_LED_MODE_OFF);
 
         if (!ready_flag)
         {
@@ -286,6 +288,11 @@ void lora_callback(twr_cmwx1zzabz_t *self, twr_cmwx1zzabz_event_t event, void *e
         strcpy(str_status, "LNK: NOK");
         twr_led_pulse(&lcd_led_r, 2000);
         packet_info_clear();
+    }
+    else if (event == TWR_CMWX1ZZABZ_EVENT_MODEM_FACTORY_RESET)
+    {
+        twr_log_debug("Factory reset event");
+        twr_system_reset();
     }
 }
 
