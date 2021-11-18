@@ -54,6 +54,8 @@ The device does not need to be turned off. Without GPS the average consumption i
 
 ## Troubleshooting LoRa Module and ERR status
 
+*** This applies only to LoRa tester FW older than 1.10.0, which has now automatic baudrate recovery**
+
 In case of LoRa Module not communicating. Open the serial terminal and copy the initialization output. It looks like this:
 
 ```
