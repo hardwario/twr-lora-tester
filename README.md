@@ -19,6 +19,12 @@ This repository contains firmware for LoRa Tester.
 - (Mini) Battery Module
 - In case of GPS also Split Module (Compact) and GPS Module
 
+## Firmware update
+
+- Connect your Core Module to the computer
+- Download latest bin file from [releases page](https://github.com/hardwario/twr-lora-tester/releases)
+- Use [HARDWARIO Playground](https://www.hardwario.com/download/) go to the firmware tab, click on `...` and select downloaded bin file.
+
 ## Buttons
 
 - Left button long press - Send JOIN request
