@@ -342,6 +342,15 @@ bool at_repc_set(twr_atci_param_t *param)
     return true;
 }
 
+bool at_ver_read(void)
+{
+    const char *version = twr_cmwx1zzabz_get_fw_version(_at.lora);
+
+    twr_atci_printfln("$VER: %s", version);
+
+    return true;
+}
+
 bool at_blink(void)
 {
     twr_led_blink(_at.led, 3);
