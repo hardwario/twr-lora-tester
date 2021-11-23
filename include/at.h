@@ -23,7 +23,7 @@
                          {"$DEBUG", NULL, at_debug_set, NULL, NULL, "Show debug UART communication"},\
                          {"$REBOOT", at_reboot, NULL, NULL, NULL, "Firmware reboot"},\
                          {"$FRESET", at_freset, NULL, NULL, NULL, "LoRa Module factory reset"},\
-                         {"$FVER", at_ver_read, NULL, NULL, NULL, "Show LoRa Module firmware version"}
+                         {"$FWVER", at_ver_read, NULL, NULL, NULL, "Show LoRa Module firmware version"}
 
 #define AT_LED_COMMANDS {"$BLINK", at_blink, NULL, NULL, NULL, "LED blink 3 times"},\
                         {"$LED", NULL, at_led_set, NULL, at_led_help, "LED on/off"}
