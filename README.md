@@ -19,6 +19,12 @@ This repository contains firmware for LoRa Tester.
 - (Mini) Battery Module
 - In case of GPS also Split Module (Compact) and GPS Module
 
+## Firmware update
+
+- Connect your Core Module to the computer
+- Download latest bin file from [releases page](https://github.com/hardwario/twr-lora-tester/releases)
+- Use [HARDWARIO Playground](https://www.hardwario.com/download/) go to the firmware tab, click on `...` and select downloaded bin file.
+
 ## Buttons
 
 - Left button long press - Send JOIN request
@@ -53,6 +59,8 @@ The ChirpStack and TTN JavaScript message decoder is in the `src/chirpstack_ttnV
 The device does not need to be turned off. Without GPS the average consumption is 40 uA. With GPS Module turned off after 15 minutes of inactivity the consumption is around 60 uA.
 
 ## Troubleshooting LoRa Module and ERR status
+
+**This applies only to LoRa tester FW older than 1.10.0, which has now automatic baudrate recovery**
 
 In case of LoRa Module not communicating. Open the serial terminal and copy the initialization output. It looks like this:
 
