@@ -17,12 +17,13 @@ jobs:
           update-pip: "true"
           update-setuptools: "false"
           update-wheel: "false"
-      - name: Build PlatformIO project
-        env:
-          PLATFORMIO_BUILD_FLAGS: "-D'VERSION=\"${{ env.GITHUB_TAG }}\"'"
+      - name: Replace version string
+        if: ${{ github.event_name == 'release' }}
         run: |
-          echo $PLATFORMIO_BUILD_FLAGS
-          pio run -e release
+          sed -i "s/vdev/${GITHUB_REF#refs/*/}/g" platformio.ini
+          cat platformio.ini
+      - name: Build PlatformIO project
+        run: pio run -e release
       - name: Set helper variables
         if: ${{ github.event_name == 'release' }}
         run: |
