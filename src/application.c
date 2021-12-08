@@ -77,7 +77,7 @@ void packet_info_clear(void)
 
 void packet_info_lora_fw(void)
 {
-    snprintf(str_info, sizeof(str_info), "LoRa Mod. FW %s", twr_cmwx1zzabz_get_fw_version(&lora));
+    snprintf(str_info, sizeof(str_info), "FW:%s LM:%s", VERSION, twr_cmwx1zzabz_get_fw_version(&lora));
 }
 
 void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
