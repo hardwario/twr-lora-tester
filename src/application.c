@@ -1,6 +1,4 @@
-#include <application.h>
-
-#include "at.h"
+#include <twr.h>
 
 #define GPS_TIMEOUT_MS (15 * 60 * 1000)
 #define TEMPERATURE_MEASUREMENT_PERIOD_MS (1 * 60 * 1000)
@@ -404,12 +402,11 @@ void application_init(void)
     twr_log_init(TWR_LOG_LEVEL_DUMP, TWR_LOG_TIMESTAMP_ABS);
 
     // Initialize AT command interface
-    at_init(&led, &lora);
+    twr_at_lora_init(&lora);
     static const twr_atci_command_t commands[] = {
-            AT_LORA_COMMANDS,
+            TWR_AT_LORA_COMMANDS,
             {"$SEND", at_send, NULL, NULL, NULL, "Immediately send packet"},
             {"$STATUS", at_status, NULL, NULL, NULL, "Show status"},
-            AT_LED_COMMANDS,
             TWR_ATCI_COMMAND_CLAC,
             TWR_ATCI_COMMAND_HELP
     };
