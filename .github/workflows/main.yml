@@ -11,7 +11,7 @@ on:
 
 env:
   BUILD_TYPE: release
-  VERSION: ${GITHUB_REF##*/}
+  FW_VERSION: ${GITHUB_REF##*/}
   REPOSITORY_NAME: ${GITHUB_REPOSITORY##*/}
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
 
     - name: Rename Firmware
       if: ${{ github.event_name == 'release' }}
-      run: mv ${{github.workspace}}/out/release/firmware.bin ${{env.REPOSITORY_NAME}}-${{env.VERSION}}.bin
+      run: mv ${{github.workspace}}/out/release/firmware.bin ${{env.REPOSITORY_NAME}}-${{env.FW_VERSION}}.bin
 
     - name: Release
       if: ${{ github.event_name == 'release' }}
