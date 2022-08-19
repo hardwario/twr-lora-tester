@@ -77,7 +77,7 @@ void packet_info_clear(void)
 
 void packet_info_lora_fw(void)
 {
-    snprintf(str_info, sizeof(str_info), "FW:%s LM:%s", VERSION, twr_cmwx1zzabz_get_fw_version(&lora));
+    snprintf(str_info, sizeof(str_info), "FW:%s LM:%s", FW_VERSION, twr_cmwx1zzabz_get_fw_version(&lora));
 }
 
 void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
@@ -104,27 +104,39 @@ void lcd_event_handler(twr_module_lcd_event_t event, void *event_param)
             twr_cmwx1zzabz_link_check(&lora);
         strcpy(str_status, "CHECK...");
 
-        break;
+            break;
 
         case TWR_MODULE_LCD_EVENT_LEFT_HOLD:
             twr_cmwx1zzabz_join(&lora);
             strcpy(str_status, "JOIN...");
-        break;
+            break;
 
         case TWR_MODULE_LCD_EVENT_RIGHT_CLICK:
             at_send();
-        break;
+            break;
 
         case TWR_MODULE_LCD_EVENT_RIGHT_HOLD:
 
-        break;
+            break;
 
         case TWR_MODULE_LCD_EVENT_BOTH_HOLD:
             // Reset must be handled later when the both buttons are release, because after reboot when any button is pressed
             // the BOOT pin is also HIGH, which causes start of bootloader instead of the application
             reset_flag = true;
             strcpy(str_status, "RESET");
-        break;
+            break;
+
+        case TWR_MODULE_LCD_EVENT_LEFT_PRESS:
+            break;
+
+        case TWR_MODULE_LCD_EVENT_LEFT_RELEASE:
+            break;
+
+        case TWR_MODULE_LCD_EVENT_RIGHT_PRESS:
+            break;
+
+        case TWR_MODULE_LCD_EVENT_RIGHT_RELEASE:
+            break;
 
         default:
         break;
@@ -463,7 +475,7 @@ void application_init(void)
         twr_atci_printfln("$GPS: \"START\"");
     }
 
-    twr_atci_printf("$FW: \"%s\"", VERSION);
+    twr_atci_printf("$FW: \"%s\"", FW_VERSION);
 
 }
 
